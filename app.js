@@ -2,6 +2,7 @@
 exports.__esModule = true;
 var path = require("path");
 var PORT = 3000;
+var PORT2 = 4096;
 var express = require("express");
 var app = require('express')();
 var server = require('http').Server(app);
@@ -13,7 +14,10 @@ app.use(express.static(__dirname + '//static'));
 app.get("/", function (req, res) {
     res.render("index");
 });
-server.listen(PORT, function () {
+app.listen(PORT, function () {
+    server.listen(PORT2, function () {
+        console.log("Server running at http://127.0.0.1:".concat(PORT2));
+    });
     console.log("Server running at http://127.0.0.1:".concat(PORT));
 });
 function SendMsg(socket, event, msg) {
@@ -105,7 +109,8 @@ io.on('connect', function (socket) {
         var id = id_table.get(socket.id);
         id_table["delete"](socket.id);
         id_list["delete"](id);
-        connect--;
+        if (connect)
+            connect--;
         var count_msg = "上線人數 : " + connect.toString();
         SendMsg(socket, 'online', count_msg);
         SendMsg(socket, 'user_list', Array.from(id_list.keys()));

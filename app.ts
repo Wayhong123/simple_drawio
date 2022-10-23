@@ -1,6 +1,7 @@
 import { Response, Request } from 'express';
 import path = require('path');
 const PORT = 3000;
+const PORT2 = 4096;
 import express = require('express')
 import { Socket } from 'socket.io';
 const app = require('express')();
@@ -125,7 +126,8 @@ io.on('connect', (socket:Socket) => {
         let id = id_table.get( socket.id )
         id_table.delete( socket.id )
         id_list.delete( id )
-        connect--
+        if ( connect )
+            connect--
         let count_msg = "上線人數 : " + connect.toString()
         SendMsg( socket, 'online', count_msg )
         SendMsg( socket, 'user_list', Array.from( id_list.keys() ) )
