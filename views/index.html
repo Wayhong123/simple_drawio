@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>
+      Simple_Chat_Room
+    </title>
+    <script> src="/socket.io/socket.io.js"</script>
+    <script>
+      function getID() {
+        let id = ""
+        while ( id == "" ) {
+          id = window.prompt("輸入你的ID","BOT")
+        } // while
+
+        return id 
+      } // getID()
+
+      document.addEventListener("DOMContentLoaded", event => {
+        let id = getID()
+        document.querySelector('#ID').value = id
+        let keyinDom = document.querySelector('#txtInput')
+        let showDom = document.querySelector('#txtShow')
+
+        document.querySelector("#btnSend").addEventListener('click',() => {
+          let txt = keyinDom.value;
+          let id = document.querySelector('#ID').value;
+          if ( txt.length && id.length ) {
+            txt = id + " : " + txt
+            socket.emit('message', txt );
+            keyinDom.value = ""
+          } // if
+        })
+
+        let url = 'ws://localhost:3000'
+        var socket = io()
+        socket.on('message', msg => {
+          if (!showDom.value) showDom.value = msg
+          else showDom.value = showDom.value + "\n" + msg
+        }); 
+      });
+
+      const canvas = document.getElementById('canvas')
+      const ctx = canvas.getContext('2d')
+
+      //起始點座標
+      let x1= 0
+      let y1= 0
+
+      // 終點座標
+      let x2= 0
+      let y2= 0
+
+      // 宣告一個 hasTouchEvent 變數，來檢查是否有 touch 的事件存在
+      const hasTouchEvent = 'ontouchstart' in window ? true : false
+      // 透過上方的 hasTouchEvent 來決定要監聽的是 mouse 還是 touch 的事件
+      const downEvent = hasTouchEvent ? 'ontouchstart' : 'mousedown'
+      const moveEvent = hasTouchEvent ? 'ontouchmove' : 'mousemove'
+      const upEvent = hasTouchEvent ? 'touchend' : 'mouseup'
+
+      // 宣告 isMouseActive 為滑鼠點擊的狀態，因為我們需要滑鼠在 mousedown 的狀態時，才會監聽 mousemove 的狀態
+      let isMouseActive = false
+
+      canvas.addEventListener(downEvent, function(e){
+        isMouseActive = true
+      })
+
+      canvas.addEventListener(downEvent, function(e){
+        isMouseActive = true  
+        x1 = e.offsetX
+        y1 = e.offsetY
+        
+        ctx.lineWidth = 5
+        ctx.lineCap = 'round'
+        ctx.lineJoin = 'round'
+      })
+
+      canvas.addEventListener(moveEvent, function(e){
+            if(!isMouseActive){
+              return
+            }
+            // 取得終點座標
+            x2 = e.offsetX
+            y2 = e.offsetY
+            
+            // 開始繪圖
+            ctx.beginPath()
+            ctx.moveTo(x1, y1)
+            ctx.lineTo(x2, y2)
+            ctx.stroke()
+            
+            // 更新起始點座標
+            x1 = x2
+            y1 = y2
+      })
+
+      canvas.addEventListener(upEvent, function(e){
+        isMouseActive = false
+      })
+    </script>
+  </head>
+
+  <body>
+    <h1> Simple chat room by Jade engine </h1>
+    <p> Online number : #{num} </p>
+    <hr>
+    <textarea name="txtShow", id="txtSHow", cols="30", rows="10", disabled> </textarea>
+    <br>
+    <canvas id="canvas" width="1500px" height="1500px"></canvas>
+    <input type="text", name="ID", id="ID", placeholder="輸入你的ID">
+    <input type="text", id="txtInput">
+    <input type="button", id="btnSend", value="送出">
+  </body>
+</html>

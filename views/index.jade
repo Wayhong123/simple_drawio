@@ -1,0 +1,236 @@
+doctype html
+html 
+  head 
+    title Jade Page
+    script( src="/socket.io/socket.io.js" )
+    link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous")
+    link(href='/css/template.css' type="text/css" rel='stylesheet')
+    script.
+      let url = 'ws://localhost:3000'
+      var socket = io()
+
+      function getID() {
+        let id = ""
+        while ( id == "" ) {
+          id = window.prompt("輸入你的ID","BOT")
+        } // while
+
+        socket.emit('login', id)
+        return id 
+      } // getID()
+
+      let count = 5
+      function timer() {
+        count--
+        time.innerText = count
+        if ( count == 0 )
+          clearInterval( timerId )
+      } // timer()
+
+      document.addEventListener("DOMContentLoaded", event => {
+        function show_interface( who, msg, answer ) {
+          room_status.innerText = msg
+          question.innerText = answer
+          if ( who == 'guess' || who == 'wait' ) {
+            yourtern = false
+            document.querySelector("#clear").hidden = true
+            //- document.querySelector("#eraser").hidden = true
+            document.querySelector("#pen").hidden = true
+            document.querySelector("#txtInput").hidden = false
+            document.querySelector("#btnSend").hidden = false
+          } // if
+
+          else {
+            yourtern = true
+            document.querySelector("#clear").hidden = false
+            //- document.querySelector("#eraser").hidden = false
+            document.querySelector("#pen").hidden = false
+            document.querySelector("#txtInput").hidden = true
+            document.querySelector("#btnSend").hidden = true
+          } // else
+
+        } // show_interface()
+
+        let id = getID()
+        document.querySelector('#ID').value = id
+        let keyinDom = document.querySelector('#txtInput')
+        let showDom = document.querySelector('#txtShow')
+
+        document.querySelector("#btnSend").addEventListener('click',() => {
+          let txt = keyinDom.value;
+          let id = document.querySelector('#ID').value;
+          if ( txt.length && id.length ) {
+            txt = id + " : " + txt
+            socket.emit('message', txt );
+            keyinDom.value = ""
+          } // if
+        })
+
+        // draw
+        // Canvas DOM 元素 
+        const canvas123 = document.getElementById('canvas')
+        const ctx = canvas123.getContext('2d')
+
+        //起始點座標
+        let x1= 0
+        let y1= 0
+
+        // 終點座標
+        let x2= 0
+        let y2= 0
+
+        // 宣告一個 hasTouchEvent 變數，來檢查是否有 touch 的事件存在
+        const hasTouchEvent = 'ontouchstart' in window ? true : false
+        // 透過上方的 hasTouchEvent 來決定要監聽的是 mouse 還是 touch 的事件
+        const downEvent = hasTouchEvent ? 'ontouchstart' : 'mousedown'
+        const moveEvent = hasTouchEvent ? 'ontouchmove' : 'mousemove'
+        const upEvent = hasTouchEvent ? 'touchend' : 'mouseup'
+
+        // 宣告 isMouseActive 為滑鼠點擊的狀態，因為我們需要滑鼠在 mousedown 的狀態時，才會監聽 mousemove 的狀態
+        let isMouseActive = false
+        let yourtern = false
+
+        function draw( posx1, posy1, posx2, posy2 ) {
+            ctx.lineWidth = 5
+            ctx.lineCap = 'round'
+            ctx.lineJoin = 'round'
+            ctx.beginPath()
+            ctx.moveTo(posx1, posy1)
+            ctx.lineTo(posx2, posy2)
+            ctx.stroke()
+            x1 = posx2
+            y1 = posy2
+        } // draw()
+
+        clear.addEventListener( 'click', () => {
+          if ( yourtern ) {
+            ctx.clearRect( 0, 0, canvas.width, canvas.height )
+            socket.emit( 'clear', '')
+          } // if          
+        })
+
+        //- eraser.addEventListener( 'click', () => {
+        //-   if ( yourtern ) {
+        //-     socket.emit( 'eraser', '')
+        //-     ctx.strokeStyle = "azure"
+        //-   } // if
+        //- })
+
+        pen.addEventListener( 'click', () => {
+          if ( yourtern ) {
+            socket.emit( 'pen', '')
+            ctx.strokeStyle = "black"
+          } // if
+        })
+
+        canvas.addEventListener(downEvent, function(e){
+          if ( yourtern )
+            isMouseActive = true
+        })
+
+        canvas.addEventListener(downEvent, function(e){
+          if ( yourtern ) {
+            isMouseActive = true  
+            x1 = e.offsetX
+            y1 = e.offsetY
+            
+            ctx.lineWidth = 5
+            ctx.lineCap = 'round'
+            ctx.lineJoin = 'round'
+          } // if
+        })
+
+        canvas.addEventListener(moveEvent, function(e){
+          if ( yourtern ) {
+            if(!isMouseActive){
+              return
+            }
+            // 取得終點座標
+            x2 = e.offsetX
+            y2 = e.offsetY
+            let pos = [ x1, y1, x2, y2 ]
+            socket.emit('some_is_drawing', pos )
+            // 開始繪圖
+
+            draw( x1, y1, x2, y2 )
+          } // if
+        })
+
+        canvas.addEventListener(upEvent, function(e){
+          if ( yourtern )
+            isMouseActive = false
+        })
+
+        socket.on('eraser', () => {
+          ctx.strokeStyle = "azure"
+        })
+
+        socket.on('pen', () => {
+          ctx.strokeStyle = "black"
+        })
+
+        socket.on('clear', () => {
+          ctx.clearRect( 0, 0, canvas.width, canvas.height )
+        })
+
+        socket.on('some_is_drawing', pos => {
+
+          // 開始繪圖
+          draw( pos[0], pos[1], pos[2], pos[3])
+        })
+
+        socket.on('message', msg => {
+          if (!showDom.value) showDom.value = msg
+          else showDom.value = showDom.value + "\n" + msg
+        });
+
+        socket.on('online', num => {
+          connect.innerText = num
+        })
+
+        socket.on('wait_for_connect', user_list => {
+          show_interface( 'wait', "等待玩家連線...", '' )
+        })
+
+        socket.on('user_list', user_list => {
+          let msg = "上線列表 : [ " + user_list + " ]"
+          connect_list.innerText = msg
+        })
+
+        socket.on('new_user', traceArr => {
+          for ( let i = 0 ; i < traceArr.length ; i++ ) {
+            draw( traceArr[i][0], traceArr[i][1], traceArr[i][2], traceArr[i][3] )
+          } // for
+
+          show_interface( 'guess', '請猜出圖中的物品是甚麼', '' )
+        })
+
+        socket.on('not_your_tern', data => {
+          show_interface( 'guess', '請猜出圖中的物品是甚麼', '' )
+          ctx.clearRect( 0, 0, canvas.width, canvas.height )
+        })
+
+        socket.on('your_tern', data => {
+          show_interface( 'draw', '現在是你的回合', "題目 : " + data )
+          ctx.clearRect( 0, 0, canvas.width, canvas.height )
+          socket.emit('not_your_tern', '' )
+        })
+      });
+
+  body
+    h1 Simple drawio by Jade engine and Node.js
+    #connect
+    #connect_list
+    hr
+    #room_status
+    #question
+    #time
+    textarea(name="txtShow", id = "txtShow", cols="30", rows="10", disabled)
+    canvas( class="canvas", id="canvas", width="300", height="300")
+    //- input( type = "button", id = "eraser", value = "橡皮擦" )
+    input( type = "button", id = "pen", value = "畫筆" )
+    input( type = "button", id = "clear", value = "清除" )
+    br
+    input( type="text", name="ID", id="ID", hidden )
+    input( type="text", id = "txtInput" )
+    input( type = "button", id = "btnSend", value = "送出" )
