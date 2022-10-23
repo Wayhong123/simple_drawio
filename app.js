@@ -14,10 +14,7 @@ app.use(express.static(__dirname + '//static'));
 app.get("/", function (req, res) {
     res.render("index");
 });
-app.listen(PORT, function () {
-    server.listen(PORT2, function () {
-        console.log("Server running at http://127.0.0.1:".concat(PORT2));
-    });
+server.listen(PORT, function () {
     console.log("Server running at http://127.0.0.1:".concat(PORT));
 });
 function SendMsg(socket, event, msg) {
