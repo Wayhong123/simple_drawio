@@ -15,7 +15,7 @@ html
 
       function getID() {
         let id = ""
-        while ( id == "" ) {
+        while ( id == "" || id == null ) {
           id = window.prompt("輸入你的ID","user" + GetRandom(1000).toString() )
         } // while
 
