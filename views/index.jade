@@ -194,6 +194,7 @@ html
         socket.on('message', msg => {
           if (!showDom.value) showDom.value = msg
           else showDom.value = showDom.value + "\n" + msg
+          showDom.scrollTop = showDom.scrollHeight;
         });
 
         socket.on('online', num => {
