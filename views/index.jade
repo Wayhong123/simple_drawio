@@ -1,7 +1,7 @@
 doctype html
 html 
   head 
-    title Jade Page
+    title simple garticio Page
     script( src="/socket.io/socket.io.js" )
     link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous")
     link(href='/css/template.css' type="text/css" rel='stylesheet')
@@ -9,10 +9,14 @@ html
       let url = 'ws://localhost:3000'
       var socket = io()
 
+      function GetRandom(x) {
+          return Math.floor(Math.random()*x);
+      } // GetRandom()
+
       function getID() {
         let id = ""
         while ( id == "" ) {
-          id = window.prompt("輸入你的ID","BOT")
+          id = window.prompt("輸入你的ID","user" + GetRandom(1000).toString() )
         } // while
 
         socket.emit('login', id)
@@ -60,7 +64,7 @@ html
           let txt = keyinDom.value;
           let id = document.querySelector('#ID').value;
           if ( txt.length && id.length ) {
-            txt = id + " : " + txt
+            txt = id + "  " + txt
             socket.emit('message', txt );
             keyinDom.value = ""
           } // if
@@ -218,7 +222,7 @@ html
       });
 
   body
-    h1 Simple drawio by Jade engine and Node.js
+    h1 Simple gartic.io by Jade engine and Node.js
     #connect
     #connect_list
     hr
