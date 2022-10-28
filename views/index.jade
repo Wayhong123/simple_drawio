@@ -3,7 +3,6 @@ html
   head 
     title simple garticio Page
     script( src="/socket.io/socket.io.js" )
-    script( src="https://unpkg.com/html5-qrcode" type="text/javascript" )
     link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous")
     link(href='/css/template.css' type="text/css" rel='stylesheet')
     script.
@@ -33,23 +32,6 @@ html
       } // timer()
 
       document.addEventListener("DOMContentLoaded", event => {
-
-        function onScanSuccess(decodedText, decodedResult) {
-          // handle the scanned code as you like, for example:
-          console.log(`Code matched = ${decodedText}`, decodedResult);
-        }
-
-        function onScanFailure(error) {
-          // handle scan failure, usually better to ignore and keep scanning.
-          // for example:
-          console.warn(`Code scan error = ${error}`);
-        }
-
-        let html5QrcodeScanner = new Html5QrcodeScanner(
-          "reader",
-          { fps: 10, qrbox: {width: 250, height: 250} },
-          /* verbose= */ false);
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 
         function show_interface( who, msg, answer ) {
           room_status.innerText = msg
@@ -243,7 +225,6 @@ html
 
   body
     h1 Simple gartic.io by Jade engine and Node.js
-    #reader 
     #connect
     #connect_list
     hr
